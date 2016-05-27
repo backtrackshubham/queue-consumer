@@ -30,4 +30,5 @@ Logs connection infromation and events to standard output.
 
 ### Fancy Output
 Output the events to the terminal and to a file for storage.
+
     ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort} tee file.txt
