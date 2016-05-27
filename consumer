@@ -10,7 +10,7 @@ function parseArguments(args) {
         string: ['v', 'u', 'p', 'q', 'h', 'o'], 
         v: '', u: '', p: '', q: '', h: '', o: ''});
 
-    if(!(args.u && args.p && args.h && args.o && args.v)) {
+    if(!(args.u && args.p && args.h && args.o && args.v && args.q)) {
         outputUsage();
     }
 
@@ -25,7 +25,7 @@ function handleUnknown(p) {
 function outputUsage() {
     console.log('Connects to a RabbitMQ queue and outputs the events as JSON to standard output.')
     console.log('\n\tUsage');
-    console.log('\t\tnode app.js -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}');
+    console.log('\t\t./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}');
     console.log('\n\tRequired Parameters');
     console.log('\t\t-v\tVirtual Host Name');
     console.log('\t\t-u\tUser Name');
