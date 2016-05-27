@@ -1,0 +1,69 @@
+#!/usr/bin/env node
+
+var parseArgs = require('minimist');
+var amqp = require('amqplib');
+
+function parseArguments(args) {
+    var args = parseArgs(args, { 
+        unknown: handleUnknown, 
+        default: { h: 'rabbitmq-us-east-1-production.hub.bitbrew.com', o: '4443'  }, 
+        string: ['v', 'u', 'p', 'q', 'h', 'o'], 
+        v: '', u: '', p: '', q: '', h: '', o: ''});
+
+    if(!(args.u && args.p && args.h && args.o && args.v)) {
+        outputUsage();
+    }
+
+    return args;
+}
+
+function handleUnknown(p) {
+    console.dir(p);
+    outputUsage();
+}
+
+function outputUsage() {
+    console.log('Connects to a RabbitMQ queue and outputs the events as JSON to standard output.')
+    console.log('\n\tUsage');
+    console.log('\t\tnode app.js -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}');
+    console.log('\n\tRequired Parameters');
+    console.log('\t\t-v\tVirtual Host Name');
+    console.log('\t\t-u\tUser Name');
+    console.log('\t\t-p\tPassword');
+    console.log('\t\t-q\tQueueName');
+    console.log('\n\tOptional Parameters');
+    console.log('\t\t-h\tRabbitMQ Host');
+    console.log('\t\t-o\tRabbitMQ Port');
+    process.exit(1);
+}
+
+function connect(args) {
+    var open = amqp.connect(`amqp://${args.u}:${args.p}@${args.h}:${args.o}/${args.v}`);
+
+    // Consumer
+    open.then(function(conn) {
+        var ok = conn.createChannel();
+        conn.on('error', function(err) {
+            if(err.message === 'Unexpected close') {
+                console.log('Connection closed. Reconnecting...');
+                connect();
+            } else {
+                throw err;
+            }
+        });
+
+        ok = ok.then(function(ch) {
+            console.log('Connected.')
+            ch.checkQueue(args.q);
+            ch.consume(args.q, function(msg) {
+                if (msg !== null) {
+                    console.log(JSON.stringify(JSON.parse(msg.content), null, 4));
+                    ch.ack(msg);
+                }
+            });
+        });
+        return ok;
+    })
+}
+
+connect(parseArguments(process.argv.slice(2)));
