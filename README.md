@@ -22,9 +22,9 @@ Logs connection infromation and events to standard output.
     {
         "messageType": "CONNECT_MESSAGE",
         "message": {
-            "serialNumber": "4120572504",
-            "configVersion": "PZ.02",
-            "firmwareVersion": "07.2D",
+            "serialNumber": "1234567890",
+            "configVersion": "---",
+            "firmwareVersion": "---",
             "latitude": 0,
             "longitude": 0,
             "fixQuality": "FixInvalid",
