@@ -6,7 +6,12 @@ A consumer for platform queues written in node. Run it on the command line.
     npm install
 
 ## Usage
+
     ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
+
+### Alternate Usage
+
+    node consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
 
 ## Output
 Logs connection infromation and events to standard output.
