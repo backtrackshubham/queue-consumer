@@ -46,7 +46,7 @@ function connect(args) {
         conn.on('error', function(err) {
             if(err.message === 'Unexpected close') {
                 console.log('Connection closed. Reconnecting...');
-                connect();
+                connect(args);
             } else {
                 throw err;
             }
