@@ -14,7 +14,7 @@ A consumer for platform queues written in node. Run it on the command line.
     node consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
 
 ## Output
-Logs connection infromation and events to standard output.
+Logs connection information and events to standard output.
 
 ### Example
 
