@@ -19,15 +19,16 @@ const cli = meow(`
 	  -h, --hostname	RabbitMQ hostname
 	  -o, --port		RabbitMQ port
 	  -a, --ack		Acknowledge messages and remove from queue
+      -r, --republish   RabbitMQ queue to republish messages to
  
 	Examples
 	  $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
 `, {
         unknown: handleUnknown,
         default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
-        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
+        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port', 'republish'],
         boolean: ['ack'],
-        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack' },
+        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack', r: 'republish' },
     });
 
 function validateArguments(args) {
@@ -65,9 +66,12 @@ function connect(args) {
             ch.consume(args.queue, function(msg) {
                 if (msg !== null) {
                     console.log(JSON.stringify(JSON.parse(msg.content), null, 4));
-		    if (args.ack === true) {
+                    if(typeof args.republish !== 'undefined' && args.republish) {
+                        ch.sendToQueue(args.republish, new Buffer(msg.content));
+                    }
+                    if (args.ack === true) {
                         ch.ack(msg);
-		    }
+                    }
                 }
             });
         });
