@@ -7,11 +7,9 @@ A consumer for platform queues written in node. Run it on the command line.
 
 ## Usage
 
-    ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
+Note: For production usage, the host and port for RabbitMQ are optional.
 
-### Alternate Usage
-
-    node consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
+    ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort} --ack
 
 ## Output
 Logs connection information and events to standard output.
