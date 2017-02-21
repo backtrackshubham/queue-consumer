@@ -36,4 +36,4 @@ Logs connection information and events to standard output.
 ### Fancy Output
 Output the events to the terminal and to a file for storage.
 
-    ./consumer {add args} tee file.txt
+    ./consumer {add args} | tee file.txt
