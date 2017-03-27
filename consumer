@@ -45,7 +45,7 @@ function handleUnknown(p) {
 }
 
 function connect(args) {
-    var open = amqp.connect(`amqp://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}`);
+    var open = amqp.connect(`amqp://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`);
 
     // Consumer
     open.then(function(conn) {
