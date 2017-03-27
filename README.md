@@ -13,6 +13,7 @@ Note: For production usage, the host and port for RabbitMQ are optional.
 
     ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} --ack
 
+```
 Options
     -v, --vhost		RabbitMQ virtual host name
     -u, --user		Username
@@ -21,6 +22,7 @@ Options
     -h, --hostname	RabbitMQ hostname
     -o, --port		RabbitMQ port
     -a, --ack         Acknowledge messages and remove from queue
+```
 
 ## Output
 Logs connection information and events to standard output.
