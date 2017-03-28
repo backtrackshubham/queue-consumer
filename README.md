@@ -11,17 +11,18 @@ Virtual hosts for the platform always start with the word tenant. For example, i
 
 Note: For production usage, the host and port for RabbitMQ are optional.
 
+```
+Example
     ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} --ack
 
-```
 Options
-    -v, --vhost		RabbitMQ virtual host name
-    -u, --user		Username
+    -v, --vhost		  RabbitMQ virtual host name
+    -u, --user		  Username
     -p, --password	Password
-    -q, --queue		RabbitMQ queue name
+    -q, --queue		  RabbitMQ queue name
     -h, --hostname	RabbitMQ hostname
-    -o, --port		RabbitMQ port
-    -a, --ack         Acknowledge messages and remove from queue
+    -o, --port		  RabbitMQ port
+    -a, --ack       Acknowledge messages and remove from queue
 ```
 
 ## Output
