@@ -9,7 +9,7 @@ const cli = meow(`
 	messages as JSON to standard output.
 
 	Usage
-	  $ ./consumer <options>
+	  $ consumer <options>
 
 	Options
 	  -v, --vhost			RabbitMQ virtual host name
@@ -21,7 +21,7 @@ const cli = meow(`
 	  -a, --ack       Acknowledge messages and remove from queue
 
 	Examples
-	  $ ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
+	  $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
 `, {
         unknown: handleUnknown,
         default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
