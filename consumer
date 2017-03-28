@@ -5,30 +5,29 @@ var amqp = require('amqplib');
 const meow = require('meow');
 
 const cli = meow(`
-	CLI queue consumer. Connects to a RabbitMQ queue and outputs 
+	CLI queue consumer. Connects to a RabbitMQ queue and outputs
 	messages as JSON to standard output.
-	
+
 	Usage
-	  $ consumer <input>
- 
+	  $ ./consumer <options>
+
 	Options
-	  -v, --vhost		RabbitMQ virtual host name
-	  -u, --user		Username
+	  -v, --vhost			RabbitMQ virtual host name
+	  -u, --user			Username
 	  -p, --password	Password
-	  -q, --queue		RabbitMQ queue name
+	  -q, --queue			RabbitMQ queue name
 	  -h, --hostname	RabbitMQ hostname
-	  -o, --port		RabbitMQ port
-	  -a, --ack         Acknowledge messages and remove from queue
-      -r, --republish   RabbitMQ queue to republish messages to
+	  -o, --port			RabbitMQ port
+	  -a, --ack       Acknowledge messages and remove from queue
 
 	Examples
-	  $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName} -h {RabbitMQHost} -o {RabbitMQPort}
+	  $ ./consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
 `, {
         unknown: handleUnknown,
         default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
-        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port', 'republish'],
+        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
         boolean: ['ack'],
-        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack', r: 'republish' },
+        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack' },
     });
 
 function validateArguments(args) {
@@ -56,7 +55,7 @@ function connect(args) {
                 connect(args);
             } else {
                 console.log(err);
-		connect(args);
+								connect(args);
             }
         });
 
@@ -65,10 +64,6 @@ function connect(args) {
             ch.checkQueue(args.queue);
             ch.consume(args.queue, function(msg) {
                 if (msg !== null) {
-                    if(typeof args.republish !== 'undefined' && args.republish) {
-                        ch.sendToQueue(args.republish, new Buffer(msg.content));
-                    }
-
                     console.log(JSON.stringify(JSON.parse(msg.content), null, 4));
 
                     if (args.ack === true) {
