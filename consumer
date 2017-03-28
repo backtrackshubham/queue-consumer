@@ -9,72 +9,73 @@ const cli = meow(`
   messages as JSON to standard output.
 
   Usage
-    $ consumer <options>
+  $ consumer <options>
 
   Options
-    -v, --vhost     RabbitMQ virtual host name
-    -u, --user      Username
-    -p, --password  Password
-    -q, --queue     RabbitMQ queue name
-    -h, --hostname  RabbitMQ hostname
-    -o, --port      RabbitMQ port
-    -a, --ack       Acknowledge messages and remove from queue
+  -v, --vhost     RabbitMQ virtual host name
+  -u, --user      Username
+  -p, --password  Password
+  -q, --queue     RabbitMQ queue name
+  -h, --hostname  RabbitMQ hostname
+  -o, --port      RabbitMQ port
+  -a, --ack       Acknowledge messages and remove from queue
+  -t, --tag       Consumer tag
 
   Examples
-    $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
-		
-`, {
-        unknown: handleUnknown,
-        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
-        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
-        boolean: ['ack'],
-        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack' },
-    });
+  $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
+
+  `, {
+    unknown: handleUnknown,
+    default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
+    string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port', 'tag'],
+    boolean: ['ack'],
+    alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack', t: 'tag' },
+  });
 
 function validateArguments(args) {
-    if(!(args.user && args.password && args.hostname && args.port && args.vhost && args.queue)) {
-        cli.showHelp(1);
-    }
+  if(!(args.user && args.password && args.hostname && args.port && args.vhost && args.queue)) {
+    cli.showHelp(1);
+  }
 
-    return args;
+  return args;
 }
 
 function handleUnknown(p) {
-    console.dir(p);
-    cli.showHelp(1);
+  console.dir(p);
+  cli.showHelp(1);
 }
 
 function connect(args) {
-    var open = amqp.connect(`amqp://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`);
+  // Make a connection to the server
+  amqp.connect(`amqp://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`)
+  .then(function(conn) {
+    conn.on('error', function(err) {
+      if(err.message === 'Unexpected close') {
+        console.log('Connection closed. Reconnecting...');
+        connect(args);
+      } else {
+        console.log(err);
+        connect(args);
+      }
+    });
 
-    // Consumer
-    open.then(function(conn) {
-        var ok = conn.createChannel();
-        conn.on('error', function(err) {
-            if(err.message === 'Unexpected close') {
-                console.log('Connection closed. Reconnecting...');
-                connect(args);
-            } else {
-                console.log(err);
-								connect(args);
-            }
-        });
+    // Create a new channel for this consumer
+    conn.createChannel()
+    .then(function(ch) {
+      console.log('Connected.')
+      ch.checkQueue(args.queue);
+      ch.consume(args.queue, function(msg) {
+        if (msg !== null) {
+          // Print the JSON message to the console
+          console.log(JSON.stringify(JSON.parse(msg.content), null, 4));
 
-        ok = ok.then(function(ch) {
-            console.log('Connected.')
-            ch.checkQueue(args.queue);
-            ch.consume(args.queue, function(msg) {
-                if (msg !== null) {
-                    console.log(JSON.stringify(JSON.parse(msg.content), null, 4));
-
-                    if (args.ack === true) {
-                        ch.ack(msg);
-                    }
-                }
-            });
-        });
-        return ok;
-    })
+          if (args.ack === true) {
+            ch.ack(msg);
+          }
+        }
+      }, { consumerTag: args.tag });
+    });
+  });
 }
 
 connect(validateArguments(cli.flags));
