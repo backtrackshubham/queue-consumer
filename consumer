@@ -5,23 +5,24 @@ var amqp = require('amqplib');
 const meow = require('meow');
 
 const cli = meow(`
-	CLI queue consumer. Connects to a RabbitMQ queue and outputs
-	messages as JSON to standard output.
+  CLI queue consumer. Connects to a RabbitMQ queue and outputs
+  messages as JSON to standard output.
 
-	Usage
-	  $ consumer <options>
+  Usage
+    $ consumer <options>
 
-	Options
-	  -v, --vhost			RabbitMQ virtual host name
-	  -u, --user			Username
-	  -p, --password	Password
-	  -q, --queue			RabbitMQ queue name
-	  -h, --hostname	RabbitMQ hostname
-	  -o, --port			RabbitMQ port
-	  -a, --ack       Acknowledge messages and remove from queue
+  Options
+    -v, --vhost     RabbitMQ virtual host name
+    -u, --user      Username
+    -p, --password  Password
+    -q, --queue     RabbitMQ queue name
+    -h, --hostname  RabbitMQ hostname
+    -o, --port      RabbitMQ port
+    -a, --ack       Acknowledge messages and remove from queue
 
-	Examples
-	  $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
+  Examples
+    $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
+		
 `, {
         unknown: handleUnknown,
         default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
