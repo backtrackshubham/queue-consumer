@@ -3,6 +3,13 @@ A consumer for platform queues written in node. Run it on the command line.
 
 ## Installation
 
+This app requires npm to be installed.
+```
+# Install npm with brew on mac os.
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install npm
+```
+
 ```
 # Clone this repository and run the install script
 cd queue-consumer
