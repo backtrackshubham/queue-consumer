@@ -107,34 +107,59 @@ function connect(args) {
       event.keen = {};
       try {
         // Try to add timestamp info for TCP events
-        event.keen.timestamp = event.body.timestamp;
+        if(event.body.timestamp != null) {
+          event.keen.timestamp = event.body.timestamp;
+        } else {
+          throw "Doesn't exist"
+        }
       } catch(e){
         try {
           // Try to add timestamp info for UDP events
-          event.keen.timestamp = event.body.header.timestamp;
+          if(event.body.header.timestamp != null) {
+            event.keen.timestamp = event.body.header.timestamp;
+          } else {
+            throw "Doesn't exist"
+          }
         } catch(e) {
           try {
             // Use the ingestion timestamp for all others
-            event.keen.timestamp = event.header.ingestionTimestamp;
+            if(event.header.ingestionTimestamp != null) {
+              event.keen.timestamp = event.header.ingestionTimestamp;
+            } else {
+              throw "Doesn't exist"
+            }
           } catch(e){}
         }
       }
 
       try {
         // Try to add location info for TCP relative time events
-        event.keen.location = [event.body.pidData.GpsReading.longitude, event.body.pidData.GpsReading.latitude];
+        if(event.body.pidData.GpsReading.longitude != null && event.body.pidData.GpsReading.latitude != null) {
+          event.keen.location = [event.body.pidData.GpsReading.longitude, event.body.pidData.GpsReading.latitude];
+        } else {
+          throw "Doesn't exist"
+        }
       } catch(e){
         try {
           // Location for TCP absolute time events
-          event.keen.location = [event.body.gps.longitude, event.body.gps.latitude];
+          if(event.body.gps.longitude != null && event.body.gps.latitude != null) {
+            event.keen.location = [event.body.gps.longitude, event.body.gps.latitude];
+          } else {
+            throw "Doesn't exist"
+          }
         } catch(e){
           try {
             // Location for UDP events
-            event.keen.location = [event.body.header.longitude, event.body.header.latitude];
+            if(event.body.header.longitude != null && event.body.header.latitude != null) {
+              event.keen.location = [event.body.header.longitude, event.body.header.latitude];
+            } else {
+              throw "Doesn't exist"
+            }
           } catch(e){}
         }
       }
 
+      //console.log(JSON.stringify(event, null, 4));
       client.deferEvent(args.keenstream, event);
     }
 }
