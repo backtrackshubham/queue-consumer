@@ -3,6 +3,7 @@
 //var parseArgs = require('minimist');
 var amqp = require('amqplib');
 const meow = require('meow');
+var Keen = require('keen-tracking');
 
 const cli = meow(`
   CLI queue consumer. Connects to a RabbitMQ queue and outputs
@@ -22,11 +23,11 @@ const cli = meow(`
 
   Examples
     $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
-		
+
 `, {
         unknown: handleUnknown,
-        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false },
-        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
+        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false, keenstream: 'events' },
+        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port', 'keenstream', 'keenpid', 'keenkey'],
         boolean: ['ack'],
         alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack' },
     });
@@ -47,6 +48,21 @@ function handleUnknown(p) {
 function connect(args) {
     var open = amqp.connect(`amqp://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`);
 
+    var client = createKeenClient();
+    client.queueCapacity(5000);
+    client.queueInterval(2);
+
+    process.on('SIGINT', function() {
+        console.log("Caught interrupt signal");
+
+        if(args.keenpid && args.keenkey) {
+          console.log("Recording any deferred events");
+          client.recordDeferredEvents();
+        }
+
+        process.exit();
+    });
+
     // Consumer
     open.then(function(conn) {
         var ok = conn.createChannel();
@@ -65,8 +81,11 @@ function connect(args) {
             ch.checkQueue(args.queue);
             ch.consume(args.queue, function(msg) {
                 if (msg !== null) {
-                    console.log(JSON.stringify(JSON.parse(msg.content), null, 4));
-
+                    var eventJson = JSON.parse(msg.content);
+                    console.log(JSON.stringify(eventJson, null, 4));
+                    if(args.keenpid && args.keenkey) {
+                      sendKeenEvent(eventJson);
+                    }
                     if (args.ack === true) {
                         ch.ack(msg);
                     }
@@ -75,6 +94,49 @@ function connect(args) {
         });
         return ok;
     })
+
+    function createKeenClient() {
+      return new Keen({
+          projectId: args.keenpid,
+          writeKey: args.keenkey
+      });
+    }
+
+    function sendKeenEvent(event) {
+      // Add the keen object to the event
+      event.keen = {};
+      try {
+        // Try to add timestamp info for TCP events
+        event.keen.timestamp = event.body.timestamp;
+      } catch(e){
+        try {
+          // Try to add timestamp info for UDP events
+          event.keen.timestamp = event.body.header.timestamp;
+        } catch(e) {
+          try {
+            // Use the ingestion timestamp for all others
+            event.keen.timestamp = event.header.ingestionTimestamp;
+          } catch(e){}
+        }
+      }
+
+      try {
+        // Try to add location info for TCP relative time events
+        event.keen.location = [event.body.pidData.GpsReading.longitude, event.body.pidData.GpsReading.latitude];
+      } catch(e){
+        try {
+          // Location for TCP absolute time events
+          event.keen.location = [event.body.gps.longitude, event.body.gps.latitude];
+        } catch(e){
+          try {
+            // Location for UDP events
+            event.keen.location = [event.body.header.longitude, event.body.header.latitude];
+          } catch(e){}
+        }
+      }
+
+      client.deferEvent(args.keenstream, event);
+    }
 }
 
 connect(validateArguments(cli.flags));
