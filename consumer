@@ -19,17 +19,16 @@ const cli = meow(`
     -h, --hostname  RabbitMQ hostname
     -o, --port      RabbitMQ port
     -a, --ack       Acknowledge messages and remove from queue
-    -s, --ssl       Enable SSL on the connection
 
   Examples
     $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
 		
 `, {
         unknown: handleUnknown,
-        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '4443', ack: false, ssl: false },
+        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '5671', ack: false, ssl: false },
         string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
         boolean: ['ack', 'ssl'],
-        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack', s: 'ssl' },
+        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack' },
     });
 
 function validateArguments(args) {
@@ -46,8 +45,7 @@ function handleUnknown(p) {
 }
 
 function connect(args) {
-    var protocol = args.ssl ? 'amqps' : 'amqp'
-    var open = amqp.connect(`${protocol}://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`);
+    var open = amqp.connect(`amqps://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`);
 
     // Consumer
     open.then(function(conn) {
