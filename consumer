@@ -19,16 +19,17 @@ const cli = meow(`
     -h, --hostname  RabbitMQ hostname
     -o, --port      RabbitMQ port
     -a, --ack       Acknowledge messages and remove from queue
+    -s, --nossl    Disable SSL handshake
 
   Examples
     $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
 		
 `, {
         unknown: handleUnknown,
-        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '5671', ack: false, ssl: false },
+        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '5671', ack: false, nossl: false },
         string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
         boolean: ['ack', 'ssl'],
-        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack' },
+        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack', s: 'nossl' },
     });
 
 function validateArguments(args) {
@@ -45,7 +46,15 @@ function handleUnknown(p) {
 }
 
 function connect(args) {
-    var open = amqp.connect(`amqps://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`);
+    var connectionString = '';
+   
+    if (args.nossl === true) {
+      connectionString = `amqp://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`
+    } else {
+      connectionString = `amqps://${args.user}:${args.password}@${args.hostname}:${args.port}/${args.vhost}?heartbeat=30`
+    }
+
+   var open = amqp.connect(connectionString);
 
     // Consumer
     open.then(function(conn) {
