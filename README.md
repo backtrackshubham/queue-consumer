@@ -34,6 +34,7 @@ Options
     -h, --hostname  RabbitMQ hostname
     -o, --port      RabbitMQ port
     -a, --ack       Acknowledge messages and remove from queue
+    -s, --nossl     Disable SSL handshake
 ```
 
 ## Output
