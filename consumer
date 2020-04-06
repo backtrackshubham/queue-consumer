@@ -12,14 +12,17 @@ const cli = meow(`
     $ consumer <options>
 
   Options
-    -v, --vhost     RabbitMQ virtual host name
-    -u, --user      Username
-    -p, --password  Password
-    -q, --queue     RabbitMQ queue name
-    -h, --hostname  RabbitMQ hostname
-    -o, --port      RabbitMQ port
-    -a, --ack       Acknowledge messages and remove from queue
-    -s, --nossl     Disable SSL handshake
+    Mandatory:
+        -v, --vhost     RabbitMQ virtual host name
+        -u, --user      Username
+        -p, --password  Password
+        -q, --queue     RabbitMQ queue name
+
+    Optional:
+        -h, --hostname  RabbitMQ hostname
+        -o, --port      RabbitMQ port
+        -a, --ack       Acknowledge messages and remove from queue
+        -s, --nossl     Disable SSL handshake
 
   Examples
     $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
