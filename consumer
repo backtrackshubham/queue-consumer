@@ -24,20 +24,61 @@ const cli = meow(`
   Examples
     $ consumer -v {VirtualHost} -u {UserName} -p {Password} -q {QueueName}
 		
-`, {
-        unknown: handleUnknown,
-        default: { hostname: 'rabbitmq-us-east-1-production.hub.bitbrew.com', port: '5671', ack: false, nossl: false },
-        string: ['vhost', 'user', 'password', 'queue', 'hostname', 'port'],
-        boolean: ['ack', 'ssl'],
-        alias: { v: 'vhost', u: 'user', p: 'password', q: 'queue', h: 'hostname', o: 'port', a: 'ack', s: 'nossl' },
-    });
+`, 
+{
+        flags: {
+            vhost: {
+            type: 'string',
+            alias: 'v'
+            },
+            user: {
+            type: 'string',
+            alias: 'u'
+            },
+            password: {
+            type: 'string',
+            alias: 'p'
+            },
+            queue: {
+            type: 'string',
+            alias: 'q'
+            },
+            hostname: {
+                type: 'string',
+                alias: 'h',
+                default : 'rabbitmq-us-east-1-production.hub.bitbrew.com'
+            },
+            port: {
+                type: 'string',
+                alias: 'o',
+                default : '5671'
+            },
+            ack: {
+                type: 'boolean',
+                alias: 'a',
+                default : false
+            },
+            nossl: {
+                type: 'boolean',
+                alias: 's',
+                default : false
+            }
+        }
+});
 
 function validateArguments(args) {
-    if(!(args.user && args.password && args.hostname && args.port && args.vhost && args.queue)) {
+    if(!(args.user && args.password && args.hostname && args.port
+        && args.vhost && args.queue && ifValid(args))) {
         cli.showHelp(1);
     }
 
     return args;
+}
+
+
+function ifValid(args){
+    return typeof args.user === 'string' && typeof args.password === 'string' && typeof args.hostname === 'string' && 
+            typeof args.port === 'string' && typeof args.vhost === 'string' && typeof args.queue === 'string';
 }
 
 function handleUnknown(p) {
