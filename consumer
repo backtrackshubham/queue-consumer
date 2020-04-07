@@ -65,7 +65,8 @@ const cli = meow(`
                 type: 'boolean',
                 alias: 's',
                 default : false
-            }
+            },
+            unknown : handleUnknown
         }
 });
 
